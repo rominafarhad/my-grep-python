@@ -1,22 +1,31 @@
 import sys
 
 def match_line(input_line, pattern):
-    # If pattern is empty, it's a match
+    # If pattern is empty, we've matched everything successfully
     if not pattern:
         return True
     
-    # Handle the '+' quantifier
+    # Handle the '?' quantifier (Zero or One)
+    if len(pattern) > 1 and pattern[1] == '?':
+        char_to_match = pattern[0]
+        remaining_pattern = pattern[2:]
+        
+        # Option 1: The character exists once
+        if input_line and (input_line[0] == char_to_match or char_to_match == '.'):
+            if match_line(input_line[1:], remaining_pattern):
+                return True
+        
+        # Option 2: The character does not exist (skip it)
+        return match_line(input_line, remaining_pattern)
+
+    # Handle the '+' quantifier (One or More)
     if len(pattern) > 1 and pattern[1] == '+':
         char_to_repeat = pattern[0]
         remaining_pattern = pattern[2:]
-        
-        # Must match at least one instance
-        if not input_line or input_line[0] != char_to_repeat:
+        if not input_line or (input_line[0] != char_to_repeat and char_to_repeat != '.'):
             return False
-            
-        # Check all possible repetitions
         i = 0
-        while i < len(input_line) and input_line[i] == char_to_repeat:
+        while i < len(input_line) and (input_line[i] == char_to_repeat or char_to_repeat == '.'):
             if match_line(input_line[i+1:], remaining_pattern):
                 return True
             i += 1
@@ -29,23 +38,19 @@ def match_line(input_line, pattern):
     return False
 
 def match_pattern(input_line, pattern):
-    # Stage 6: Start anchor
     if pattern.startswith("^"):
         return match_line(input_line, pattern[1:])
     
-    # Stage 7: End anchor
     if pattern.endswith("$"):
-        # This is a simple way for the end anchor
+        # Simple check for end anchor
         return input_line.endswith(pattern[:-1])
 
-    # For other stages (d, w, groups), we'll keep our previous simple logic
-    # But for a real engine, we try to match at every position:
+    # Try matching the pattern at every possible starting position in the line
     for i in range(len(input_line) + 1):
         if match_line(input_line[i:], pattern):
             return True
     return False
 
-# Keep your main() function the same as before
 def main():
     if len(sys.argv) < 3:
         exit(1)
