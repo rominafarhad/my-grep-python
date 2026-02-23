@@ -1,7 +1,6 @@
 import sys
 
 def match_line(input_line, pattern):
-    # If pattern is empty, we've matched everything successfully
     if not pattern:
         return True
     
@@ -9,13 +8,9 @@ def match_line(input_line, pattern):
     if len(pattern) > 1 and pattern[1] == '?':
         char_to_match = pattern[0]
         remaining_pattern = pattern[2:]
-        
-        # Option 1: The character exists once
         if input_line and (input_line[0] == char_to_match or char_to_match == '.'):
             if match_line(input_line[1:], remaining_pattern):
                 return True
-        
-        # Option 2: The character does not exist (skip it)
         return match_line(input_line, remaining_pattern)
 
     # Handle the '+' quantifier (One or More)
@@ -31,7 +26,8 @@ def match_line(input_line, pattern):
             i += 1
         return False
 
-    # Basic character matching
+    # Stage 10: Wildcard (.) logic is right here
+    # If the pattern char is '.', it matches whatever character is in the input
     if input_line and (pattern[0] == input_line[0] or pattern[0] == '.'):
         return match_line(input_line[1:], pattern[1:])
         
@@ -42,10 +38,9 @@ def match_pattern(input_line, pattern):
         return match_line(input_line, pattern[1:])
     
     if pattern.endswith("$"):
-        # Simple check for end anchor
         return input_line.endswith(pattern[:-1])
 
-    # Try matching the pattern at every possible starting position in the line
+    # Try matching at every possible starting position
     for i in range(len(input_line) + 1):
         if match_line(input_line[i:], pattern):
             return True
