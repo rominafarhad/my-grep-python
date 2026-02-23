@@ -4,7 +4,7 @@ def match_line(input_line, pattern):
     if not pattern:
         return True
     
-    # Handle the '?' quantifier (Zero or One)
+    # Handle '?' quantifier
     if len(pattern) > 1 and pattern[1] == '?':
         char_to_match = pattern[0]
         remaining_pattern = pattern[2:]
@@ -13,7 +13,7 @@ def match_line(input_line, pattern):
                 return True
         return match_line(input_line, remaining_pattern)
 
-    # Handle the '+' quantifier (One or More)
+    # Handle '+' quantifier
     if len(pattern) > 1 and pattern[1] == '+':
         char_to_repeat = pattern[0]
         remaining_pattern = pattern[2:]
@@ -26,14 +26,22 @@ def match_line(input_line, pattern):
             i += 1
         return False
 
-    # Stage 10: Wildcard (.) logic is right here
-    # If the pattern char is '.', it matches whatever character is in the input
+    # Basic char match (including dot)
     if input_line and (pattern[0] == input_line[0] or pattern[0] == '.'):
         return match_line(input_line[1:], pattern[1:])
         
     return False
 
 def match_pattern(input_line, pattern):
+    # Stage 11: Alternation (|)
+    # Check if '|' is in pattern (simplified for basic cases)
+    if '|' in pattern:
+        options = pattern.split('|')
+        for option in options:
+            if match_pattern(input_line, option):
+                return True
+        return False
+
     if pattern.startswith("^"):
         return match_line(input_line, pattern[1:])
     
